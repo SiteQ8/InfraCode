@@ -1,0 +1,26 @@
+# InfraCode — Dependencies
+# Core
+pyyaml>=6.0
+cryptography>=41.0
+
+# API Server
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.0
+
+# Cloud Providers (optional — install as needed)
+# boto3>=1.29.0           # AWS
+# azure-identity>=1.15.0  # Azure
+# azure-mgmt-resource>=23.0
+# google-auth>=2.23.0     # GCP
+# kubernetes>=28.1.0      # Kubernetes
+
+# Vault Integration (optional)
+# hvac>=2.1.0  # HashiCorp Vault
+
+# Development & Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+black>=23.0
+ruff>=0.1.0
+mypy>=1.7.0

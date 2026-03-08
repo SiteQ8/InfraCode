@@ -1,0 +1,71 @@
+infracode:
+  version: "1.0"
+
+name: gcp-vpc-production
+description: Production GCP VPC with subnets and firewall
+provider: gcp
+
+variables:
+  project_id:
+    type: string
+    required: true
+  region:
+    type: string
+    default: us-central1
+
+resources:
+  main-network:
+    type: gcp_vpc_network
+    name: production-network
+    auto_create_subnetworks: false
+    routing_mode: REGIONAL
+
+  web-subnet:
+    type: gcp_subnet
+    name: web-subnet
+    network: "${main-network.self_link}"
+    region: "${var.region}"
+    ip_cidr_range: "10.0.1.0/24"
+    private_ip_google_access: true
+    depends_on:
+      - main-network
+
+  app-subnet:
+    type: gcp_subnet
+    name: app-subnet
+    network: "${main-network.self_link}"
+    region: "${var.region}"
+    ip_cidr_range: "10.0.2.0/24"
+    private_ip_google_access: true
+    depends_on:
+      - main-network
+
+  allow-https:
+    type: gcp_firewall_rule
+    name: allow-https
+    network: "${main-network.self_link}"
+    direction: INGRESS
+    allowed:
+      - protocol: tcp
+        ports:
+          - "443"
+    source_ranges:
+      - "0.0.0.0/0"
+    target_tags:
+      - web-server
+    priority: 1000
+    depends_on:
+      - main-network
+
+  deny-all-ingress:
+    type: gcp_firewall_rule
+    name: deny-all-ingress
+    network: "${main-network.self_link}"
+    direction: INGRESS
+    denied:
+      - protocol: all
+    source_ranges:
+      - "0.0.0.0/0"
+    priority: 65534
+    depends_on:
+      - main-network

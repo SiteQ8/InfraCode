@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InfraCode — Infrastructure as Code Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0e17;
+  --bg-secondary: #111827;
+  --bg-tertiary: #1a2235;
+  --bg-card: #151d2e;
+  --bg-hover: #1e293b;
+  --border: #1e3a5f;
+  --border-focus: #3b82f6;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #06b6d4;
+  --accent-green: #10b981;
+  --accent-yellow: #f59e0b;
+  --accent-red: #ef4444;
+  --accent-purple: #8b5cf6;
+  --accent-orange: #f97316;
+  --glow-blue: rgba(59, 130, 246, 0.15);
+  --glow-green: rgba(16, 185, 129, 0.15);
+  --glow-red: rgba(239, 68, 68, 0.15);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Animated background grid */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.app { position: relative; z-index: 1; display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sidebar-logo {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700; font-size: 16px; color: white;
+}
+
+.logo-text { font-weight: 600; font-size: 18px; letter-spacing: -0.5px; }
+.logo-version { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+.sidebar-nav { flex: 1; padding: 12px; overflow-y: auto; }
+
+.nav-section { margin-bottom: 20px; }
+.nav-section-title {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-muted);
+  padding: 8px 12px; margin-bottom: 4px;
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px;
+  cursor: pointer; transition: all 0.15s;
+  font-size: 14px; color: var(--text-secondary);
+  border: 1px solid transparent;
+}
+
+.nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+.nav-item.active {
+  background: var(--glow-blue);
+  color: var(--accent-blue);
+  border-color: rgba(59,130,246,0.2);
+}
+
+.nav-icon { width: 18px; text-align: center; font-size: 14px; opacity: 0.8; }
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Main Content */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.topbar {
+  height: 56px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+}
+
+.topbar-title { font-size: 16px; font-weight: 600; }
+.topbar-actions { display: flex; gap: 8px; }
+
+.btn {
+  padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg-tertiary); color: var(--text-primary);
+  font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+}
+
+.btn:hover { background: var(--bg-hover); border-color: var(--border-focus); }
+.btn-primary { background: var(--accent-blue); border-color: var(--accent-blue); color: white; }
+.btn-primary:hover { background: #2563eb; }
+.btn-success { background: var(--accent-green); border-color: var(--accent-green); color: white; }
+.btn-danger { background: var(--accent-red); border-color: var(--accent-red); color: white; }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+.content { flex: 1; overflow-y: auto; padding: 24px; }
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.card-title { font-size: 14px; font-weight: 600; }
+.card-body { padding: 20px; }
+
+/* Stats Grid */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+}
+
+.stat-card.blue::after { background: var(--accent-blue); }
+.stat-card.green::after { background: var(--accent-green); }
+.stat-card.yellow::after { background: var(--accent-yellow); }
+.stat-card.purple::after { background: var(--accent-purple); }
+
+.stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+.stat-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+/* Editor */
+.editor-container {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.editor-tabs {
+  display: flex;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.editor-tab {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+
+.editor-tab:hover { color: var(--text-primary); background: var(--bg-hover); }
+.editor-tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
+
+.editor-body { position: relative; }
+
+.editor-textarea {
+  width: 100%;
+  min-height: 400px;
+  background: transparent;
+  color: var(--accent-green);
+  border: none;
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  resize: vertical;
+  outline: none;
+  tab-size: 2;
+}
+
+/* Plan Output */
+.plan-output {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.8;
+  max-height: 500px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  color: var(--text-secondary);
+}
+
+.plan-create { color: var(--accent-green); }
+.plan-update { color: var(--accent-yellow); }
+.plan-delete { color: var(--accent-red); }
+.plan-noop { color: var(--text-muted); }
+
+/* Resource Table */
+.resource-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.resource-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.resource-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(30,58,95,0.3);
+  color: var(--text-secondary);
+}
+
+.resource-table tr:hover td { background: var(--bg-hover); }
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.badge-active { background: var(--glow-green); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
+.badge-pending { background: rgba(245,158,11,0.1); color: var(--accent-yellow); border: 1px solid rgba(245,158,11,0.3); }
+.badge-failed { background: var(--glow-red); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+
+.badge-critical { background: var(--glow-red); color: var(--accent-red); }
+.badge-high { background: rgba(249,115,22,0.1); color: var(--accent-orange); }
+.badge-medium { background: rgba(245,158,11,0.1); color: var(--accent-yellow); }
+.badge-low { background: var(--glow-blue); color: var(--accent-blue); }
+
+.provider-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 6px; font-size: 11px;
+  font-weight: 600; font-family: 'JetBrains Mono', monospace;
+}
+
+.provider-aws { background: rgba(255,153,0,0.1); color: #ff9900; }
+.provider-azure { background: rgba(0,120,215,0.1); color: #0078d7; }
+.provider-gcp { background: rgba(66,133,244,0.1); color: #4285f4; }
+.provider-kubernetes { background: rgba(50,109,230,0.1); color: #326de6; }
+
+/* Compliance */
+.compliance-score {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  margin: 0 auto 16px;
+}
+
+.score-high { background: var(--glow-green); color: var(--accent-green); border: 3px solid var(--accent-green); }
+.score-medium { background: rgba(245,158,11,0.1); color: var(--accent-yellow); border: 3px solid var(--accent-yellow); }
+.score-low { background: var(--glow-red); color: var(--accent-red); border: 3px solid var(--accent-red); }
+
+/* Progress bar */
+.progress-bar {
+  height: 6px; border-radius: 3px;
+  background: var(--bg-tertiary);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%; border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* Security findings */
+.finding {
+  padding: 14px 16px;
+  border-left: 3px solid;
+  background: var(--bg-tertiary);
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 10px;
+}
+
+.finding-critical { border-left-color: var(--accent-red); }
+.finding-high { border-left-color: var(--accent-orange); }
+.finding-medium { border-left-color: var(--accent-yellow); }
+.finding-low { border-left-color: var(--accent-blue); }
+
+.finding-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.finding-desc { font-size: 12px; color: var(--text-secondary); }
+.finding-fix { font-size: 11px; color: var(--accent-cyan); margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
+
+/* Template browser */
+.template-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+.template-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.template-card:hover {
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+.template-name { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.template-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.5; }
+.template-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* History timeline */
+.timeline-item {
+  display: flex; gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(30,58,95,0.3);
+}
+
+.timeline-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.timeline-dot.success { background: var(--accent-green); }
+.timeline-dot.failed { background: var(--accent-red); }
+.timeline-dot.pending { background: var(--accent-yellow); }
+
+.timeline-content { flex: 1; }
+.timeline-action { font-size: 13px; font-weight: 600; }
+.timeline-detail { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+.timeline-time { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .sidebar { width: 220px; }
+}
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.animate-in { animation: fadeIn 0.3s ease forwards; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.pulse { animation: pulse 2s ease-in-out infinite; }
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+// ── Sample Data ─────────────────────────────────────────────────────────
+
+const SAMPLE_TEMPLATE = `infracode:
+  version: "1.0"
+
+name: production-infrastructure
+description: Multi-tier production environment
+provider: aws
+
+variables:
+  environment:
+    type: string
+    default: production
+  region:
+    type: string
+    default: us-east-1
+  vpc_cidr:
+    type: string
+    default: "10.0.0.0/16"
+
+resources:
+  main-vpc:
+    type: aws_vpc
+    name: "\${var.environment}-vpc"
+    cidr_block: "\${var.vpc_cidr}"
+    enable_dns_support: true
+    enable_dns_hostnames: true
+    tags:
+      Environment: "\${var.environment}"
+      ManagedBy: InfraCode
+
+  public-subnet-1:
+    type: aws_subnet
+    name: "\${var.environment}-public-1"
+    vpc_id: "\${main-vpc.vpc_id}"
+    cidr_block: "10.0.1.0/24"
+    availability_zone: "\${var.region}a"
+    map_public_ip_on_launch: true
+    depends_on:
+      - main-vpc
+
+  private-subnet-1:
+    type: aws_subnet
+    name: "\${var.environment}-private-1"
+    vpc_id: "\${main-vpc.vpc_id}"
+    cidr_block: "10.0.10.0/24"
+    availability_zone: "\${var.region}a"
+    map_public_ip_on_launch: false
+    depends_on:
+      - main-vpc
+
+  web-sg:
+    type: aws_security_group
+    name: "\${var.environment}-web-sg"
+    description: "Web tier — HTTPS only"
+    vpc_id: "\${main-vpc.vpc_id}"
+    ingress:
+      - from_port: 443
+        to_port: 443
+        protocol: tcp
+        cidr_blocks:
+          - "0.0.0.0/0"
+    depends_on:
+      - main-vpc
+
+  data-bucket:
+    type: aws_s3_bucket
+    name: "\${var.environment}-data"
+    bucket: "myapp-data-\${var.environment}"
+    acl: private
+    versioning:
+      enabled: true
+    encryption:
+      sse_algorithm: aws:kms
+    public_access_block:
+      block_public_acls: true
+      block_public_policy: true
+
+  primary-database:
+    type: aws_rds_instance
+    name: "\${var.environment}-db"
+    engine: postgres
+    instance_class: db.t3.medium
+    allocated_storage: 100
+    storage_encrypted: true
+    multi_az: true
+    publicly_accessible: false
+    master_username: "\${vault.db_username}"
+    master_password: "\${vault.db_password}"
+    depends_on:
+      - main-vpc
+      - private-subnet-1`;
+
+const SAMPLE_RESOURCES = [
+  { id: "main-vpc", type: "aws_vpc", provider: "aws", status: "active", config: { cidr_block: "10.0.0.0/16" } },
+  { id: "public-subnet-1", type: "aws_subnet", provider: "aws", status: "active", config: { cidr_block: "10.0.1.0/24" } },
+  { id: "private-subnet-1", type: "aws_subnet", provider: "aws", status: "active", config: { cidr_block: "10.0.10.0/24" } },
+  { id: "web-sg", type: "aws_security_group", provider: "aws", status: "active", config: { description: "Web HTTPS" } },
+  { id: "data-bucket", type: "aws_s3_bucket", provider: "aws", status: "active", config: { encryption: "AES256" } },
+  { id: "primary-database", type: "aws_rds_instance", provider: "aws", status: "active", config: { engine: "postgres", multi_az: true } },
+  { id: "prod-vnet", type: "azure_virtual_network", provider: "azure", status: "active", config: { address_space: "10.1.0.0/16" } },
+  { id: "app-deploy", type: "k8s_deployment", provider: "kubernetes", status: "active", config: { replicas: 3, image: "myapp:v2.1" } },
+];
+
+const SAMPLE_FINDINGS = [
+  { rule_id: "SEC001", severity: "CRITICAL", resource_id: "test-bucket", title: "S3 Bucket Public Access", description: "S3 bucket allows public read access", remediation: "Set acl to 'private' and enable public_access_block" },
+  { rule_id: "SEC004", severity: "HIGH", resource_id: "admin-sg", title: "SSH Port Open to Internet", description: "Port 22 accessible from 0.0.0.0/0", remediation: "Restrict SSH to trusted IP ranges" },
+  { rule_id: "SEC005", severity: "HIGH", resource_id: "staging-db", title: "RDS Not Encrypted", description: "Database storage is not encrypted", remediation: "Enable storage_encrypted with KMS" },
+  { rule_id: "SEC007", severity: "MEDIUM", resource_id: "staging-db", title: "No Multi-AZ for Database", description: "Single-AZ deployment", remediation: "Enable multi_az" },
+  { rule_id: "SEC010", severity: "MEDIUM", resource_id: "dev-ns", title: "Missing Network Policy", description: "No network policies in namespace", remediation: "Define NetworkPolicy resources" },
+];
+
+const SAMPLE_HISTORY = [
+  { change_id: "a3f8b2c1", timestamp: "2026-03-08T14:30:00Z", action: "apply", template: "production.yaml", status: "success", message: "Deploy v2.1 — add RDS Multi-AZ" },
+  { change_id: "d7e9f4a2", timestamp: "2026-03-08T11:15:00Z", action: "plan", template: "production.yaml", status: "success", message: "Plan for v2.1 release" },
+  { change_id: "b1c3e5d7", timestamp: "2026-03-07T16:45:00Z", action: "apply", template: "staging.yaml", status: "success", message: "Staging environment update" },
+  { change_id: "f2a4b6c8", timestamp: "2026-03-07T09:20:00Z", action: "apply", template: "networking.yaml", status: "failed", message: "VPC peering failed — quota limit" },
+  { change_id: "c5d7e9f1", timestamp: "2026-03-06T13:10:00Z", action: "rollback", template: "production.yaml", status: "success", message: "Rollback to v2.0 — hotfix" },
+  { change_id: "e8f0a2b4", timestamp: "2026-03-05T17:30:00Z", action: "apply", template: "production.yaml", status: "success", message: "Initial production deployment" },
+];
+
+const TEMPLATES = [
+  { name: "AWS VPC", file: "aws/vpc.yaml", provider: "aws", desc: "Production VPC with public/private subnets, security groups, and NAT" },
+  { name: "AWS S3 Secure", file: "aws/s3.yaml", provider: "aws", desc: "Security-hardened S3 with encryption, versioning, and access blocks" },
+  { name: "AWS RDS PostgreSQL", file: "aws/rds.yaml", provider: "aws", desc: "Production RDS PostgreSQL with Multi-AZ and encryption" },
+  { name: "AWS EKS Cluster", file: "aws/eks.yaml", provider: "aws", desc: "Production Kubernetes cluster with private endpoints" },
+  { name: "Azure VNet", file: "azure/vnet.yaml", provider: "azure", desc: "Virtual Network with subnets, NSGs, and Key Vault" },
+  { name: "GCP VPC", file: "gcp/vpc.yaml", provider: "gcp", desc: "VPC network with subnets and firewall rules" },
+  { name: "K8s Microservice", file: "kubernetes/deployment.yaml", provider: "kubernetes", desc: "Full microservice: Deployment, Service, Ingress, NetworkPolicy" },
+];
+
+// ── Components ──────────────────────────────────────────────────────────
+
+const Icon = ({ name }) => {
+  const icons = {
+    dashboard: "◉", editor: "⌘", resources: "☰", security: "⛊",
+    compliance: "✓", templates: "❐", history: "↻", settings: "⚙",
+    vault: "⊡", providers: "☁", plan: "▶", apply: "⚡",
+    validate: "✔", scan: "⊘",
+  };
+  return <span style={{ fontSize: 15 }}>{icons[name] || "•"}</span>;
+};
+
+// Dashboard
+const Dashboard = () => (
+  <div className="animate-in">
+    <div className="stats-grid">
+      <div className="stat-card blue">
+        <div className="stat-label">Resources</div>
+        <div className="stat-value" style={{ color: 'var(--accent-blue)' }}>8</div>
+        <div className="stat-sub">Across 3 providers</div>
+      </div>
+      <div className="stat-card green">
+        <div className="stat-label">State Health</div>
+        <div className="stat-value" style={{ color: 'var(--accent-green)' }}>100%</div>
+        <div className="stat-sub">No drift detected</div>
+      </div>
+      <div className="stat-card yellow">
+        <div className="stat-label">Security Score</div>
+        <div className="stat-value" style={{ color: 'var(--accent-yellow)' }}>82</div>
+        <div className="stat-sub">5 findings to resolve</div>
+      </div>
+      <div className="stat-card purple">
+        <div className="stat-label">Deployments</div>
+        <div className="stat-value" style={{ color: 'var(--accent-purple)' }}>24</div>
+        <div className="stat-sub">This month</div>
+      </div>
+    </div>
+
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div className="card">
+        <div className="card-header">
+          <span className="card-title">Recent Activity</span>
+        </div>
+        <div className="card-body" style={{ padding: '8px 16px' }}>
+          {SAMPLE_HISTORY.slice(0, 4).map((h, i) => (
+            <div key={i} className="timeline-item">
+              <div className={`timeline-dot ${h.status}`}></div>
+              <div className="timeline-content">
+                <div className="timeline-action">{h.action.toUpperCase()} — {h.template}</div>
+                <div className="timeline-detail">{h.message}</div>
+              </div>
+              <div className="timeline-time">{h.timestamp.slice(11,16)}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <span className="card-title">Provider Status</span>
+        </div>
+        <div className="card-body">
+          {[
+            { name: 'AWS', region: 'us-east-1', resources: 6, color: '#ff9900' },
+            { name: 'Azure', region: 'eastus', resources: 1, color: '#0078d7' },
+            { name: 'Kubernetes', region: 'production-cluster', resources: 1, color: '#326de6' },
+          ].map((p, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid rgba(30,58,95,0.3)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-green)' }}></div>
+                <span style={{ fontWeight: 600, fontSize: 13 }}>{p.name}</span>
+                <span className="mono" style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.region}</span>
+              </div>
+              <span className="mono" style={{ fontSize: 12, color: p.color }}>{p.resources} resources</span>
+            </div>
+          ))}
+
+          <div style={{ marginTop: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6 }}>
+              <span>Compliance</span>
+              <span className="mono" style={{ color: 'var(--accent-green)' }}>87%</span>
+            </div>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{ width: '87%', background: 'linear-gradient(90deg, var(--accent-blue), var(--accent-green))' }}></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// Template Editor
+const Editor = () => {
+  const [template, setTemplate] = useState(SAMPLE_TEMPLATE);
+  const [activeTab, setActiveTab] = useState('editor');
+  const [planOutput, setPlanOutput] = useState('');
+  const [validationResult, setValidationResult] = useState(null);
+
+  const handleValidate = () => {
+    setValidationResult({ valid: true, issues: [
+      { level: "info", message: "Template validation passed" },
+      { level: "info", message: "6 resources defined" },
+      { level: "info", message: "All dependencies resolved" },
+      { level: "info", message: "No circular dependencies" },
+    ]});
+    setActiveTab('output');
+  };
+
+  const handlePlan = () => {
+    setPlanOutput(`╔══════════════════════════════════════════════════╗
+║         InfraCode Execution Plan                 ║
+╠══════════════════════════════════════════════════╣
+║  Template: production-infrastructure             ║
+║  Provider: aws                                   ║
+╠══════════════════════════════════════════════════╣
+║  [+] main-vpc                   CREATE           ║
+║      type: aws_vpc                               ║
+║      cidr_block: 10.0.0.0/16                     ║
+║                                                  ║
+║  [+] public-subnet-1            CREATE           ║
+║      type: aws_subnet                            ║
+║      cidr_block: 10.0.1.0/24                     ║
+║                                                  ║
+║  [+] private-subnet-1           CREATE           ║
+║      type: aws_subnet                            ║
+║      cidr_block: 10.0.10.0/24                    ║
+║                                                  ║
+║  [+] web-sg                     CREATE           ║
+║      type: aws_security_group                    ║
+║                                                  ║
+║  [+] data-bucket                CREATE           ║
+║      type: aws_s3_bucket                         ║
+║      encryption: aws:kms                         ║
+║                                                  ║
+║  [+] primary-database           CREATE           ║
+║      type: aws_rds_instance                      ║
+║      engine: postgres | multi_az: true           ║
+╠══════════════════════════════════════════════════╣
+║  Summary:                                        ║
+║    + Create:  6                                  ║
+║    ~ Update:  0                                  ║
+║    - Delete:  0                                  ║
+║    = No-op:   0                                  ║
+║                                                  ║
+║  Estimated time: ~7 minutes                      ║
+╚══════════════════════════════════════════════════╝`);
+    setValidationResult(null);
+    setActiveTab('output');
+  };
+
+  return (
+    <div className="animate-in">
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        <button className="btn btn-primary" onClick={handleValidate}>
+          <Icon name="validate" /> Validate
+        </button>
+        <button className="btn" onClick={handlePlan} style={{ borderColor: 'var(--accent-cyan)', color: 'var(--accent-cyan)' }}>
+          <Icon name="plan" /> Plan
+        </button>
+        <button className="btn btn-success">
+          <Icon name="apply" /> Apply
+        </button>
+        <button className="btn" onClick={() => { setPlanOutput(''); setValidationResult(null); }}>
+          <Icon name="scan" /> Security Scan
+        </button>
+      </div>
+
+      <div className="editor-container">
+        <div className="editor-tabs">
+          <div className={`editor-tab ${activeTab === 'editor' ? 'active' : ''}`} onClick={() => setActiveTab('editor')}>
+            infrastructure.yaml
+          </div>
+          <div className={`editor-tab ${activeTab === 'output' ? 'active' : ''}`} onClick={() => setActiveTab('output')}>
+            Output
+          </div>
+        </div>
+
+        <div className="editor-body">
+          {activeTab === 'editor' ? (
+            <textarea
+              className="editor-textarea"
+              value={template}
+              onChange={e => setTemplate(e.target.value)}
+              spellCheck={false}
+            />
+          ) : (
+            <div style={{ padding: 16 }}>
+              {validationResult && (
+                <div>
+                  {validationResult.issues.map((issue, i) => (
+                    <div key={i} style={{ padding: '8px 12px', marginBottom: 6, borderRadius: 6, background: issue.level === 'info' ? 'var(--glow-green)' : 'var(--glow-red)', color: issue.level === 'info' ? 'var(--accent-green)' : 'var(--accent-red)', fontFamily: "'JetBrains Mono', monospace", fontSize: 13 }}>
+                      {issue.level === 'info' ? '✓' : '✗'} {issue.message}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {planOutput && <div className="plan-output">{planOutput}</div>}
+              {!validationResult && !planOutput && (
+                <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 60 }}>
+                  Click Validate, Plan, or Apply to see output here
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Resources view
+const Resources = () => (
+  <div className="animate-in">
+    <div className="card">
+      <div className="card-header">
+        <span className="card-title">Infrastructure Resources ({SAMPLE_RESOURCES.length})</span>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn btn-sm">Export State</button>
+          <button className="btn btn-sm" style={{ borderColor: 'var(--accent-cyan)', color: 'var(--accent-cyan)' }}>Drift Check</button>
+        </div>
+      </div>
+      <div className="card-body" style={{ padding: 0 }}>
+        <table className="resource-table">
+          <thead>
+            <tr>
+              <th>Resource ID</th>
+              <th>Type</th>
+              <th>Provider</th>
+              <th>Status</th>
+              <th>Key Config</th>
+            </tr>
+          </thead>
+          <tbody>
+            {SAMPLE_RESOURCES.map((r, i) => (
+              <tr key={i}>
+                <td className="mono" style={{ color: 'var(--accent-cyan)', fontSize: 12 }}>{r.id}</td>
+                <td className="mono" style={{ fontSize: 12 }}>{r.type}</td>
+                <td><span className={`provider-badge provider-${r.provider}`}>{r.provider.toUpperCase()}</span></td>
+                <td><span className={`badge badge-${r.status}`}>{r.status}</span></td>
+                <td className="mono" style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  {Object.entries(r.config).map(([k,v]) => `${k}: ${v}`).join(' | ')}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+);
+
+// Security
+const Security = () => (
+  <div className="animate-in">
+    <div className="stats-grid">
+      <div className="stat-card green">
+        <div className="stat-label">Security Score</div>
+        <div className="stat-value" style={{ color: 'var(--accent-green)' }}>82</div>
+      </div>
+      <div className="stat-card" style={{ borderColor: 'var(--accent-red)' }}>
+        <div className="stat-label">Critical</div>
+        <div className="stat-value" style={{ color: 'var(--accent-red)' }}>1</div>
+      </div>
+      <div className="stat-card" style={{ borderColor: 'var(--accent-orange)' }}>
+        <div className="stat-label">High</div>
+        <div className="stat-value" style={{ color: 'var(--accent-orange)' }}>2</div>
+      </div>
+      <div className="stat-card" style={{ borderColor: 'var(--accent-yellow)' }}>
+        <div className="stat-label">Medium</div>
+        <div className="stat-value" style={{ color: 'var(--accent-yellow)' }}>2</div>
+      </div>
+    </div>
+
+    <div className="card">
+      <div className="card-header">
+        <span className="card-title">Security Findings</span>
+        <button className="btn btn-sm btn-primary">Re-scan</button>
+      </div>
+      <div className="card-body">
+        {SAMPLE_FINDINGS.map((f, i) => (
+          <div key={i} className={`finding finding-${f.severity.toLowerCase()}`}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="finding-title">{f.rule_id}: {f.title}</div>
+              <span className={`badge badge-${f.severity.toLowerCase()}`}>{f.severity}</span>
+            </div>
+            <div className="finding-desc">Resource: <span className="mono">{f.resource_id}</span> — {f.description}</div>
+            <div className="finding-fix">Fix: {f.remediation}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// Compliance
+const Compliance = () => {
+  const frameworks = [
+    { name: "CIS AWS Benchmarks", score: 87, passing: 13, failing: 2, total: 15 },
+    { name: "NIST 800-53", score: 82, passing: 9, failing: 2, total: 11 },
+    { name: "PCI DSS v4.0", score: 75, passing: 6, failing: 2, total: 8 },
+  ];
+  return (
+    <div className="animate-in">
+      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+        {frameworks.map((fw, i) => (
+          <div key={i} className="card" style={{ margin: 0 }}>
+            <div className="card-body" style={{ textAlign: 'center' }}>
+              <div className={`compliance-score ${fw.score >= 85 ? 'score-high' : fw.score >= 70 ? 'score-medium' : 'score-low'}`}>
+                {fw.score}%
+              </div>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>{fw.name}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                <span style={{ color: 'var(--accent-green)' }}>{fw.passing} passing</span> · <span style={{ color: 'var(--accent-red)' }}>{fw.failing} failing</span> · {fw.total} total
+              </div>
+              <div className="progress-bar" style={{ marginTop: 12 }}>
+                <div className="progress-fill" style={{ width: `${fw.score}%`, background: fw.score >= 85 ? 'var(--accent-green)' : fw.score >= 70 ? 'var(--accent-yellow)' : 'var(--accent-red)' }}></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <span className="card-title">Compliance Violations</span>
+        </div>
+        <div className="card-body" style={{ padding: 0 }}>
+          <table className="resource-table">
+            <thead><tr><th>Policy</th><th>Framework</th><th>Control</th><th>Severity</th><th>Resource</th></tr></thead>
+            <tbody>
+              {[
+                { id: "CIS-2.1.1", fw: "CIS AWS", control: "S3 encryption at rest", sev: "HIGH", res: "staging-logs" },
+                { id: "CIS-4.1", fw: "CIS AWS", control: "Restrict SSH access", sev: "HIGH", res: "admin-sg" },
+                { id: "NIST-SC-28", fw: "NIST 800-53", control: "Protection at rest", sev: "HIGH", res: "staging-db" },
+                { id: "PCI-1.2", fw: "PCI DSS v4.0", control: "Restrict untrusted connections", sev: "CRITICAL", res: "admin-sg" },
+                { id: "PCI-3.4", fw: "PCI DSS v4.0", control: "Render PAN unreadable", sev: "CRITICAL", res: "staging-db" },
+              ].map((v, i) => (
+                <tr key={i}>
+                  <td className="mono" style={{ fontSize: 12, color: 'var(--accent-cyan)' }}>{v.id}</td>
+                  <td>{v.fw}</td>
+                  <td>{v.control}</td>
+                  <td><span className={`badge badge-${v.sev.toLowerCase()}`}>{v.sev}</span></td>
+                  <td className="mono" style={{ fontSize: 12 }}>{v.res}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Templates Browser
+const Templates = ({ onLoadTemplate }) => (
+  <div className="animate-in">
+    <div className="template-grid">
+      {TEMPLATES.map((t, i) => (
+        <div key={i} className="template-card" onClick={() => onLoadTemplate(t)}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 8 }}>
+            <div className="template-name">{t.name}</div>
+            <span className={`provider-badge provider-${t.provider}`}>{t.provider.toUpperCase()}</span>
+          </div>
+          <div className="template-desc">{t.desc}</div>
+          <div className="template-meta">
+            <span className="mono" style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t.file}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// History
+const History = () => (
+  <div className="animate-in">
+    <div className="card">
+      <div className="card-header">
+        <span className="card-title">Change History</span>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn btn-sm">Export Log</button>
+        </div>
+      </div>
+      <div className="card-body" style={{ padding: '8px 16px' }}>
+        {SAMPLE_HISTORY.map((h, i) => (
+          <div key={i} className="timeline-item">
+            <div className={`timeline-dot ${h.status}`}></div>
+            <div className="timeline-content">
+              <div className="timeline-action">
+                <span className={`badge ${h.action === 'apply' ? 'badge-active' : h.action === 'rollback' ? 'badge-pending' : ''}`} style={{ marginRight: 8 }}>
+                  {h.action.toUpperCase()}
+                </span>
+                {h.template}
+              </div>
+              <div className="timeline-detail">{h.message}</div>
+            </div>
+            <div>
+              <div className="timeline-time">{h.timestamp.slice(0,10)}</div>
+              <div className="timeline-time">{h.timestamp.slice(11,16)} UTC</div>
+              <div className="mono" style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{h.change_id}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// Providers
+const Providers = () => {
+  const providers = [
+    { name: "AWS", types: 10, desc: "VPC, EC2, S3, RDS, EKS, Lambda, IAM, ALB, SG", color: "#ff9900", key: "aws" },
+    { name: "Azure", types: 9, desc: "Resource Group, VNet, Subnet, NSG, VM, Storage, AKS, SQL, Key Vault", color: "#0078d7", key: "azure" },
+    { name: "GCP", types: 8, desc: "VPC, Subnet, Compute, GCS, Cloud SQL, GKE, Firewall, Cloud Functions", color: "#4285f4", key: "gcp" },
+    { name: "Kubernetes", types: 10, desc: "Namespace, Deployment, Service, Ingress, ConfigMap, Secret, PVC, NetworkPolicy, SA, RBAC", color: "#326de6", key: "kubernetes" },
+  ];
+  return (
+    <div className="animate-in">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+        {providers.map((p, i) => (
+          <div key={i} className="card" style={{ margin: 0 }}>
+            <div className="card-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${p.color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, color: p.color }}>
+                  {p.name[0]}
+                </div>
+                <div>
+                  <span className="card-title">{p.name}</span>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.types} resource types</div>
+                </div>
+              </div>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--accent-green)' }}></div>
+            </div>
+            <div className="card-body">
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{p.desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ── Main App ────────────────────────────────────────────────────────────
+
+const App = () => {
+  const [page, setPage] = useState('dashboard');
+
+  const navItems = [
+    { section: "Overview", items: [
+      { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+    ]},
+    { section: "Infrastructure", items: [
+      { id: 'editor', label: 'Template Editor', icon: 'editor' },
+      { id: 'resources', label: 'Resources', icon: 'resources' },
+      { id: 'templates', label: 'Templates', icon: 'templates' },
+      { id: 'providers', label: 'Providers', icon: 'providers' },
+    ]},
+    { section: "Security", items: [
+      { id: 'security', label: 'Security Scan', icon: 'security' },
+      { id: 'compliance', label: 'Compliance', icon: 'compliance' },
+    ]},
+    { section: "Operations", items: [
+      { id: 'history', label: 'History', icon: 'history' },
+    ]},
+  ];
+
+  const pageTitles = {
+    dashboard: 'Dashboard',
+    editor: 'Template Editor',
+    resources: 'Resources',
+    security: 'Security Scanner',
+    compliance: 'Compliance',
+    templates: 'Template Library',
+    history: 'Change History',
+    providers: 'Cloud Providers',
+  };
+
+  const handleLoadTemplate = (t) => setPage('editor');
+
+  return (
+    <div className="app">
+      <div className="sidebar">
+        <div className="sidebar-logo">
+          <div className="logo-icon">IC</div>
+          <div>
+            <div className="logo-text">InfraCode</div>
+            <div className="logo-version">v1.0.0</div>
+          </div>
+        </div>
+
+        <div className="sidebar-nav">
+          {navItems.map((section, si) => (
+            <div key={si} className="nav-section">
+              <div className="nav-section-title">{section.section}</div>
+              {section.items.map(item => (
+                <div
+                  key={item.id}
+                  className={`nav-item ${page === item.id ? 'active' : ''}`}
+                  onClick={() => setPage(item.id)}
+                >
+                  <span className="nav-icon"><Icon name={item.icon} /></span>
+                  {item.label}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        <div className="sidebar-footer">
+          <div>Ali AlEnezi</div>
+          <div style={{ opacity: 0.6 }}>@SiteQ8</div>
+        </div>
+      </div>
+
+      <div className="main">
+        <div className="topbar">
+          <div className="topbar-title">{pageTitles[page]}</div>
+          <div className="topbar-actions">
+            <button className="btn btn-sm" style={{ color: 'var(--accent-green)', borderColor: 'var(--accent-green)' }}>
+              ● Connected
+            </button>
+          </div>
+        </div>
+
+        <div className="content">
+          {page === 'dashboard' && <Dashboard />}
+          {page === 'editor' && <Editor />}
+          {page === 'resources' && <Resources />}
+          {page === 'security' && <Security />}
+          {page === 'compliance' && <Compliance />}
+          {page === 'templates' && <Templates onLoadTemplate={handleLoadTemplate} />}
+          {page === 'history' && <History />}
+          {page === 'providers' && <Providers />}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+ReactDOM.render(<App />, document.getElementById('app'));
+</script>
+</body>
+</html>

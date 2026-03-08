@@ -1,0 +1,108 @@
+infracode:
+  version: "1.0"
+
+name: aws-vpc-production
+description: Production VPC with multi-AZ public and private subnets
+provider: aws
+
+variables:
+  environment:
+    type: string
+    default: production
+  region:
+    type: string
+    default: us-east-1
+  vpc_cidr:
+    type: string
+    default: "10.0.0.0/16"
+
+resources:
+  main-vpc:
+    type: aws_vpc
+    name: "${var.environment}-vpc"
+    cidr_block: "${var.vpc_cidr}"
+    enable_dns_support: true
+    enable_dns_hostnames: true
+    tags:
+      Environment: "${var.environment}"
+      ManagedBy: InfraCode
+
+  public-subnet-1:
+    type: aws_subnet
+    name: "${var.environment}-public-1"
+    vpc_id: "${main-vpc.vpc_id}"
+    cidr_block: "10.0.1.0/24"
+    availability_zone: "${var.region}a"
+    map_public_ip_on_launch: true
+    depends_on:
+      - main-vpc
+    tags:
+      Tier: public
+
+  public-subnet-2:
+    type: aws_subnet
+    name: "${var.environment}-public-2"
+    vpc_id: "${main-vpc.vpc_id}"
+    cidr_block: "10.0.2.0/24"
+    availability_zone: "${var.region}b"
+    map_public_ip_on_launch: true
+    depends_on:
+      - main-vpc
+    tags:
+      Tier: public
+
+  private-subnet-1:
+    type: aws_subnet
+    name: "${var.environment}-private-1"
+    vpc_id: "${main-vpc.vpc_id}"
+    cidr_block: "10.0.10.0/24"
+    availability_zone: "${var.region}a"
+    map_public_ip_on_launch: false
+    depends_on:
+      - main-vpc
+    tags:
+      Tier: private
+
+  private-subnet-2:
+    type: aws_subnet
+    name: "${var.environment}-private-2"
+    vpc_id: "${main-vpc.vpc_id}"
+    cidr_block: "10.0.11.0/24"
+    availability_zone: "${var.region}b"
+    map_public_ip_on_launch: false
+    depends_on:
+      - main-vpc
+    tags:
+      Tier: private
+
+  web-security-group:
+    type: aws_security_group
+    name: "${var.environment}-web-sg"
+    description: "Web tier — HTTPS only"
+    vpc_id: "${main-vpc.vpc_id}"
+    ingress:
+      - from_port: 443
+        to_port: 443
+        protocol: tcp
+        cidr_blocks:
+          - "0.0.0.0/0"
+        description: HTTPS
+    egress:
+      - from_port: 0
+        to_port: 0
+        protocol: "-1"
+        cidr_blocks:
+          - "0.0.0.0/0"
+    depends_on:
+      - main-vpc
+    tags:
+      Role: web
+
+outputs:
+  vpc_id: "${main-vpc.vpc_id}"
+  public_subnets:
+    - "${public-subnet-1.subnet_id}"
+    - "${public-subnet-2.subnet_id}"
+  private_subnets:
+    - "${private-subnet-1.subnet_id}"
+    - "${private-subnet-2.subnet_id}"

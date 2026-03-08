@@ -1,0 +1,82 @@
+---
+name: CIS Cloud Benchmarks
+version: "1.0"
+description: CIS Benchmark compliance policies for multi-cloud environments
+framework: CIS
+
+policies:
+  - id: CIS-STORAGE-001
+    control: Encrypt all storage at rest
+    severity: HIGH
+    resource_types:
+      - aws_s3_bucket
+      - azure_storage_account
+      - gcp_gcs_bucket
+    condition:
+      field: encryption
+      operator: exists
+    remediation: Enable server-side encryption on all storage resources
+
+  - id: CIS-STORAGE-002
+    control: Disable public access on storage
+    severity: CRITICAL
+    resource_types:
+      - aws_s3_bucket
+    condition:
+      field: acl
+      operator: equals
+      value: private
+    remediation: Set ACL to private and enable public access block
+
+  - id: CIS-NETWORK-001
+    control: Restrict SSH access
+    severity: HIGH
+    resource_types:
+      - aws_security_group
+      - azure_nsg
+      - gcp_firewall_rule
+    condition:
+      description: No rule should allow 0.0.0.0/0 to port 22
+    remediation: Restrict SSH to specific trusted IP ranges
+
+  - id: CIS-DB-001
+    control: Enable database encryption
+    severity: HIGH
+    resource_types:
+      - aws_rds_instance
+      - azure_sql_database
+      - gcp_cloud_sql
+    condition:
+      field: storage_encrypted
+      operator: equals
+      value: true
+    remediation: Enable storage encryption with KMS/managed key
+
+  - id: CIS-DB-002
+    control: Database not publicly accessible
+    severity: CRITICAL
+    resource_types:
+      - aws_rds_instance
+    condition:
+      field: publicly_accessible
+      operator: equals
+      value: false
+    remediation: Set publicly_accessible to false
+
+  - id: CIS-K8S-001
+    control: No containers running as root
+    severity: HIGH
+    resource_types:
+      - k8s_deployment
+    condition:
+      description: All containers must have runAsNonRoot true
+    remediation: Set security_context.run_as_non_root to true
+
+  - id: CIS-K8S-002
+    control: Network policies defined
+    severity: MEDIUM
+    resource_types:
+      - k8s_namespace
+    condition:
+      description: All namespaces should have network policies
+    remediation: Define NetworkPolicy resources for each namespace

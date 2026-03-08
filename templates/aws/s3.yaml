@@ -1,0 +1,41 @@
+infracode:
+  version: "1.0"
+
+name: aws-s3-secure
+description: Security-hardened S3 bucket with encryption and logging
+provider: aws
+
+variables:
+  bucket_name:
+    type: string
+    required: true
+  environment:
+    type: string
+    default: production
+
+resources:
+  data-bucket:
+    type: aws_s3_bucket
+    name: "${var.bucket_name}"
+    bucket: "${var.bucket_name}-${var.environment}"
+    acl: private
+    versioning:
+      enabled: true
+    encryption:
+      sse_algorithm: aws:kms
+    public_access_block:
+      block_public_acls: true
+      block_public_policy: true
+      ignore_public_acls: true
+      restrict_public_buckets: true
+    logging:
+      target_bucket: "${var.bucket_name}-logs"
+    lifecycle_rules:
+      - id: archive
+        status: Enabled
+        transition:
+          days: 90
+          storage_class: STANDARD_IA
+    tags:
+      DataClassification: confidential
+      Environment: "${var.environment}"

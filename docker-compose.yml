@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  infracode-api:
+    build: .
+    container_name: infracode-api
+    ports:
+      - "8000:8000"
+    environment:
+      - INFRACODE_HOST=0.0.0.0
+      - INFRACODE_PORT=8000
+      - INFRACODE_DEBUG=false
+      - INFRACODE_SECRET_KEY=${INFRACODE_SECRET_KEY:-change-me-in-production}
+      - INFRACODE_ENCRYPTION_KEY=${INFRACODE_ENCRYPTION_KEY:-}
+      - INFRACODE_LOG_LEVEL=INFO
+    volumes:
+      - infracode-state:/app/.infracode
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+
+  infracode-gui:
+    image: nginx:alpine
+    container_name: infracode-gui
+    ports:
+      - "8080:80"
+    volumes:
+      - ./gui:/usr/share/nginx/html:ro
+    depends_on:
+      - infracode-api
+    restart: unless-stopped
+
+volumes:
+  infracode-state:
+    driver: local

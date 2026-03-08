@@ -1,0 +1,144 @@
+infracode:
+  version: "1.0"
+
+name: k8s-microservice
+description: Production Kubernetes microservice deployment
+provider: kubernetes
+
+variables:
+  app_name:
+    type: string
+    required: true
+  image:
+    type: string
+    required: true
+  replicas:
+    type: number
+    default: 3
+  namespace:
+    type: string
+    default: production
+  port:
+    type: number
+    default: 8080
+
+resources:
+  app-namespace:
+    type: k8s_namespace
+    name: "${var.namespace}"
+    labels:
+      environment: production
+      managed-by: infracode
+
+  app-deployment:
+    type: k8s_deployment
+    name: "${var.app_name}"
+    namespace: "${var.namespace}"
+    replicas: "${var.replicas}"
+    containers:
+      - name: "${var.app_name}"
+        image: "${var.image}"
+        ports:
+          - container_port: "${var.port}"
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+        security_context:
+          run_as_non_root: true
+          read_only_root_filesystem: true
+          allow_privilege_escalation: false
+        liveness_probe:
+          http_get:
+            path: /health
+            port: "${var.port}"
+          initial_delay_seconds: 15
+          period_seconds: 10
+        readiness_probe:
+          http_get:
+            path: /ready
+            port: "${var.port}"
+          initial_delay_seconds: 5
+          period_seconds: 5
+    strategy:
+      type: RollingUpdate
+      max_unavailable: 1
+      max_surge: 1
+    depends_on:
+      - app-namespace
+    labels:
+      app: "${var.app_name}"
+
+  app-service:
+    type: k8s_service
+    name: "${var.app_name}-svc"
+    namespace: "${var.namespace}"
+    type: ClusterIP
+    ports:
+      - port: 80
+        target_port: "${var.port}"
+        protocol: TCP
+    selector:
+      app: "${var.app_name}"
+    depends_on:
+      - app-deployment
+
+  app-ingress:
+    type: k8s_ingress
+    name: "${var.app_name}-ingress"
+    namespace: "${var.namespace}"
+    ingress_class: nginx
+    rules:
+      - host: "${var.app_name}.example.com"
+        paths:
+          - path: /
+            service: "${var.app_name}-svc"
+            port: 80
+    tls:
+      - hosts:
+          - "${var.app_name}.example.com"
+        secret_name: "${var.app_name}-tls"
+    depends_on:
+      - app-service
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+
+  app-network-policy:
+    type: k8s_network_policy
+    name: "${var.app_name}-netpol"
+    namespace: "${var.namespace}"
+    pod_selector:
+      app: "${var.app_name}"
+    ingress:
+      - from:
+          - namespace_selector:
+              environment: production
+        ports:
+          - port: "${var.port}"
+            protocol: TCP
+    policy_types:
+      - Ingress
+    depends_on:
+      - app-namespace
+
+  app-configmap:
+    type: k8s_configmap
+    name: "${var.app_name}-config"
+    namespace: "${var.namespace}"
+    data:
+      LOG_LEVEL: "info"
+      ENVIRONMENT: "production"
+      PORT: "${var.port}"
+    depends_on:
+      - app-namespace
+
+  app-service-account:
+    type: k8s_service_account
+    name: "${var.app_name}-sa"
+    namespace: "${var.namespace}"
+    automount_service_account_token: false
+    depends_on:
+      - app-namespace

@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+venv/
+.venv/
+env/
+
+# State files (contain sensitive infrastructure state)
+*.tfstate
+*.tfstate.backup
+.infracode/state/*.json
+!.infracode/state/.gitkeep
+
+# Secrets & credentials
+.env
+*.pem
+*.key
+*.crt
+secrets/
+vault/
+.vault-token
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+package-lock.json
+
+# Logs
+*.log
+logs/
+
+# Coverage
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Docker
+.docker/

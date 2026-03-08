@@ -1,0 +1,100 @@
+infracode:
+  version: "1.0"
+
+name: azure-vnet-production
+description: Production Azure Virtual Network
+provider: azure
+
+variables:
+  environment:
+    type: string
+    default: production
+  location:
+    type: string
+    default: eastus
+  resource_group:
+    type: string
+    required: true
+
+resources:
+  resource-group:
+    type: azure_resource_group
+    name: "${var.environment}-rg"
+    location: "${var.location}"
+    tags:
+      Environment: "${var.environment}"
+
+  main-vnet:
+    type: azure_virtual_network
+    name: "${var.environment}-vnet"
+    resource_group: "${var.resource_group}"
+    address_space:
+      - "10.0.0.0/16"
+    depends_on:
+      - resource-group
+    tags:
+      Environment: "${var.environment}"
+
+  web-subnet:
+    type: azure_subnet
+    name: "${var.environment}-web-subnet"
+    resource_group: "${var.resource_group}"
+    virtual_network: "${main-vnet.name}"
+    address_prefix: "10.0.1.0/24"
+    depends_on:
+      - main-vnet
+
+  app-subnet:
+    type: azure_subnet
+    name: "${var.environment}-app-subnet"
+    resource_group: "${var.resource_group}"
+    virtual_network: "${main-vnet.name}"
+    address_prefix: "10.0.2.0/24"
+    depends_on:
+      - main-vnet
+
+  db-subnet:
+    type: azure_subnet
+    name: "${var.environment}-db-subnet"
+    resource_group: "${var.resource_group}"
+    virtual_network: "${main-vnet.name}"
+    address_prefix: "10.0.3.0/24"
+    depends_on:
+      - main-vnet
+
+  web-nsg:
+    type: azure_nsg
+    name: "${var.environment}-web-nsg"
+    resource_group: "${var.resource_group}"
+    location: "${var.location}"
+    rules:
+      - name: allow-https
+        priority: 100
+        direction: Inbound
+        access: Allow
+        protocol: Tcp
+        destination_port_range: "443"
+        source_address_prefix: "*"
+      - name: deny-all-inbound
+        priority: 4096
+        direction: Inbound
+        access: Deny
+        protocol: "*"
+        source_address_prefix: "*"
+    depends_on:
+      - resource-group
+
+  key-vault:
+    type: azure_key_vault
+    name: "${var.environment}-kv"
+    resource_group: "${var.resource_group}"
+    location: "${var.location}"
+    tenant_id: "${var.tenant_id}"
+    sku: premium
+    soft_delete: true
+    purge_protection: true
+    network_acls:
+      default_action: Deny
+      bypass: AzureServices
+    depends_on:
+      - resource-group
