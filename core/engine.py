@@ -285,7 +285,7 @@ class DependencyGraph:
     def topological_sort(self) -> list[list[str]]:
         """
         Topological sort with parallelism detection.
-        Returns list of "layers" — resources in same layer can be provisioned in parallel.
+        Returns list of "layers": resources in same layer can be provisioned in parallel.
         """
         in_degree = {node: 0 for node in self._graph}
         for node in self._graph:

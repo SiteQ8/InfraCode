@@ -1,1 +1,1 @@
-"""InfraCode CLI — Command-line interface for infrastructure management."""
+"""InfraCode CLI: Command-line interface for infrastructure management."""

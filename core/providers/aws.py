@@ -86,7 +86,7 @@ class AWSProvider(BaseProvider):
         self._provisioned: dict[str, dict] = {}
 
     def initialize(self) -> bool:
-        """Initialize AWS provider — validate credentials."""
+        """Initialize AWS provider: validate credentials."""
         try:
             import boto3
             session = boto3.Session(

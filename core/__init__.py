@@ -1,5 +1,5 @@
 """
-InfraCode — Infrastructure as Code Platform
+InfraCode: Infrastructure as Code Platform
 Core Engine Module
 
 Author: Ali AlEnezi (@SiteQ8)

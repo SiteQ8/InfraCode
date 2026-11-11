@@ -1,1 +1,1 @@
-"""InfraCode Versioning — Version control and history tracking."""
+"""InfraCode Versioning: Version control and history tracking."""

@@ -13,7 +13,7 @@ def rds_postgres(
     sg_refs: list = None,
     tags: dict = None,
 ) -> dict:
-    """Generate a production-ready RDS PostgreSQL instance."""
+    """Generate an RDS PostgreSQL instance."""
     return {
         f"{name}-rds": {
             "type": "aws_rds_instance",

@@ -66,7 +66,7 @@ class AES256GCMEncryption:
             ciphertext = aesgcm.encrypt(nonce, plaintext.encode(), aad_bytes)
             return base64.b64encode(nonce + ciphertext).decode()
         except ImportError:
-            # Fallback: XOR-based obfuscation (NOT secure — development only)
+            # Fallback: XOR-based obfuscation (NOT secure, development only)
             logger.warning("cryptography library not available — using development fallback")
             return base64.b64encode(plaintext.encode()).decode()
 

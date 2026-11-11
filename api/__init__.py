@@ -1,1 +1,1 @@
-"""InfraCode REST API — FastAPI-based API server."""
+"""InfraCode REST API: FastAPI-based API server."""
