@@ -1,4 +1,4 @@
-# InfraCode — Infrastructure as Code Platform
+# InfraCode: Infrastructure as Code Platform
 
 <p align="center">
   <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" alt="Version">
@@ -11,10 +11,10 @@
 
 ## Key Features
 
-- **Multi-Cloud Providers**: AWS, Azure, GCP, Kubernetes — unified template syntax
+- **Multi-Cloud Providers**: AWS, Azure, GCP, Kubernetes, unified template syntax
 - **State Management**: Encrypted state files with locking, remote backends, and rollback
 - **Version Control**: Full infrastructure versioning with diff, history, and rollback
-- **Plan & Apply**: Preview changes before applying — never deploy blind
+- **Plan & Apply**: Preview changes before applying, never deploy blind
 - **Drift Detection**: Continuous monitoring for configuration drift from desired state
 - **Security Hardened**: AES-256-GCM encryption, secret vault, RBAC, audit logging
 - **Compliance Engine**: CIS Benchmarks, NIST 800-53, PCI DSS v4.0, custom policies
@@ -104,8 +104,8 @@ InfraCode/
 
 ## Author
 
-**Ali AlEnezi** — [@SiteQ8](https://github.com/SiteQ8)
+**Ali AlEnezi**, [@SiteQ8](https://github.com/SiteQ8)
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License, see [LICENSE](LICENSE) for details.
